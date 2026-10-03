@@ -1,0 +1,92 @@
+name: CI
+
+# The repo had no CI, so "checks are local (tsc, vitest)" was the documented
+# status — which means a broken commit could only be caught by whoever ran the
+# suite next. This runs the same two commands the README advertises, on every
+# push to main and every pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A new push supersedes the previous run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: typecheck & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      # `--frozen-lockfile` so a PR that edits package.json without the lockfile
+      # fails here instead of silently resolving different versions.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The Convex bindings in src/convex/_generated are committed, so the
+      # typecheck needs no deployment, no account and no secrets. Tests exercise
+      # the real Convex functions in-process through convex-test for the same
+      # reason — the leaderboard, guild and claim-sync code is covered without
+      # touching a live backend.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun run test
+
+  # The frontend is hosted statically; the Convex functions are a separate
+  # deployment. The leaderboard, guilds and milestone-claim sync only work in
+  # production once these functions are pushed, so this job is what keeps the
+  # backend in step with main instead of relying on someone remembering
+  # `npx convex deploy`.
+  deploy-backend:
+    name: deploy convex functions
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # `convex deploy` reads the key from the environment, so it stays a
+      # repository secret and never touches the workflow file. Without the
+      # secret the job reports why and exits clean — a fork or a fresh clone
+      # must not fail CI just because it can't reach production.
+      - name: Deploy
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::notice title=Backend deploy skipped::Set a CONVEX_DEPLOY_KEY repository secret (Convex dashboard → Project Settings → Production Deploy Key) to push schema and functions to production."
+            exit 0
+          fi
+          bunx convex deploy
