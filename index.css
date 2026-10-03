@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   Palette. Every Tailwind color in this app resolves through these
+   variables, so `.dark` on <html> rethemes the whole product without
+   dark: variants on every element. Values are RGB channels.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces (light paper) */
+  --paper: 250 248 244;
+  --paper-50: 255 255 255;
+  --paper-100: 244 241 234;
+  --paper-200: 233 228 216;
+  --paper-300: 217 210 192;
+
+  /* text + dark windows */
+  --ink-50: 245 242 236;
+  --ink-100: 236 231 221;
+  --ink-200: 217 211 198;
+  --ink-300: 179 173 161;
+  --ink-400: 141 135 125;
+  --ink-500: 111 106 99;
+  --ink-600: 58 58 66;
+  --ink-700: 46 46 53;
+  --ink-800: 36 36 41;
+  --ink-850: 27 27 31;
+  --ink-900: 19 19 22;
+  --ink-950: 11 11 12;
+
+  /* gold accent */
+  --gold-300: 236 217 160;
+  --gold-400: 212 175 55;
+  --gold-500: 184 145 46;
+  --gold-600: 148 114 31;
+  --gold-700: 111 85 20;
+}
+
+/* Night mode: surfaces go near-black, text goes warm light, gold brightens. */
+.dark {
+  color-scheme: dark;
+
+  --paper: 14 14 16;
+  --paper-50: 23 23 26;
+  --paper-100: 30 30 34;
+  --paper-200: 48 48 55;
+  --paper-300: 66 66 74;
+
+  --ink-50: 32 32 35;
+  --ink-100: 44 44 48;
+  --ink-200: 63 60 56;
+  --ink-300: 89 85 79;
+  --ink-400: 111 106 99;
+  --ink-500: 133 127 117;
+  --ink-600: 156 150 140;
+  --ink-700: 178 173 163;
+  --ink-800: 207 204 196;
+  --ink-850: 222 219 212;
+  --ink-900: 236 234 228;
+  --ink-950: 250 248 244;
+
+  --gold-300: 240 227 189;
+  --gold-400: 212 175 55;
+  --gold-500: 224 190 85;
+  --gold-600: 236 217 160;
+  --gold-700: 245 233 205;
+}
+
+/*
+ * Sections that are deliberately dark in BOTH themes (the hero canvases, guild
+ * cards, certificate) re-pin the light palette inside themselves. Their content
+ * is already written light-on-dark, so it keeps rendering identically instead
+ * of flipping to black-on-black.
+ */
+.dark .dark-canvas,
+.dark .code-window {
+  --paper: 250 248 244;
+  --paper-50: 255 255 255;
+  --paper-100: 244 241 234;
+  --paper-200: 233 228 216;
+  --paper-300: 217 210 192;
+  --ink-950: 11 11 12;
+  --ink-900: 19 19 22;
+  --ink-850: 27 27 31;
+  --ink-800: 36 36 41;
+  --ink-700: 46 46 53;
+  --ink-600: 58 58 66;
+  --ink-500: 111 106 99;
+  --ink-400: 141 135 125;
+  --ink-300: 179 173 161;
+  --ink-200: 217 211 198;
+  --ink-100: 236 231 221;
+  --ink-50: 245 242 236;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink-900 font-sans antialiased;
+  perspective: 1200px;
+}
+
+::selection {
+  @apply bg-gold-400/25 text-ink-950;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--paper-100));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--paper-300));
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ink-300));
+}
+
+/* Horizontal strips (the phone nav row) scroll without a visible track. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Phone shell: while the bottom tab bar is mounted (MobileTabBar tags <html>),
+ * every page keeps scroll room so the bar never covers its last row.
+ */
+@media (max-width: 767px) {
+  html.has-tabbar main {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-full bg-ink-950 px-6 py-2.5 font-semibold text-paper-50 transition hover:bg-ink-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400;
+  }
+  .btn-gold {
+    @apply inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-2.5 font-semibold text-ink-950 transition hover:bg-gold-300 hover:shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-full border border-paper-300 px-6 py-2.5 font-semibold text-ink-900 transition hover:border-gold-400 hover:text-gold-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400;
+  }
+  .card {
+    @apply rounded-2xl border border-paper-200 bg-paper-50 shadow-lift;
+  }
+  .code-window {
+    @apply overflow-hidden rounded-xl bg-ink-950;
+  }
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-[0.2em] text-gold-600;
+  }
+  .certificate-sheet {
+    @apply bg-paper-50;
+  }
+
+  /* ──3D / modern extras ── */
+
+  .glass {
+    background: rgb(var(--paper) / 0.78);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  }
+
+  .dark .glass {
+    background: rgb(var(--paper-50) / 0.82);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #d4af37 0%, #ecd9a0 50%, #d4af37 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease infinite;
+  }
+
+  .tilt-card {
+    transform-style: preserve-3d;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.35s ease;
+  }
+  .tilt-card:hover {
+    transform: translateY(-6px) rotateX(4deg) rotateY(-2deg);
+    box-shadow: 0 20px 50px -12px rgba(212, 175, 55, 0.15),
+                0 4px 20px rgba(11, 11, 12, 0.08);
+  }
+
+  .mesh-bg {
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 25%, rgba(212,175,55,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 85% 75%, rgba(236,217,160,0.1) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(212,175,55,0.04) 0%, transparent 60%);
+  }
+
+  /* Dark hero/section canvas (Mistral-style) */
+  .dark-canvas {
+    background:
+      radial-gradient(ellipse 80% 60% at 70% -10%, rgba(212, 175, 55, 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 90%, rgba(236, 217, 160, 0.08) 0%, transparent 55%),
+      #0b0b0c;
+    color: #faf8f4;
+  }
+
+  /* Dotted 3D perspective grid floor */
+  .grid-floor {
+    background-image:
+      linear-gradient(rgba(212, 175, 55, 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212, 175, 55, 0.12) 1px, transparent 1px);
+    background-size: 44px 44px;
+    transform: perspective(700px) rotateX(58deg) scale(1.6);
+    transform-origin: top center;
+    mask-image: linear-gradient(to bottom, black 30%, transparent 92%);
+    -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 92%);
+  }
+
+  .dots-bg-dark {
+    background-image: radial-gradient(rgba(250, 248, 244, 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Spinning conic ring (avatars, badges) */
+  .conic-ring {
+    background: conic-gradient(from 0deg, #d4af37, #0b0b0c 30%, #ecd9a0 55%, #d4af37 80%, #0b0b0c 100%);
+    animation: rotateSlow 7s linear infinite;
+  }
+
+  /* Inset border highlight for glass panels */
+  .glass-edge {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 24px 60px -24px rgba(11, 11, 12, 0.25);
+  }
+  .dark .glass-edge {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Gold buttons keep dark labels in night mode — white-on-gold was unreadable. */
+  .dark .btn-gold {
+    color: #131316;
+  }
+  .glass-edge-dark {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  }
+
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 0;
+  }
+}
+
+/* ── Keyframes ── */
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Scroll-triggered fade-in */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Certificates print cleanly ── */
+@media print {
+  body * { visibility: hidden; }
+  .certificate-sheet, .certificate-sheet * { visibility: visible; }
+  .certificate-sheet {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
